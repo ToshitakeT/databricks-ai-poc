@@ -37,7 +37,7 @@ def bronze_to_silver(spark, bronze_table: str, silver_table: str) -> dict:
     )
     silver_count = silver_df.count()
 
-    silver_df.write.mode("overwrite").saveAsTable(silver_table)
+    silver_df.createOrReplaceTempView(silver_table)
     return {"bronze_count": bronze_count, "silver_count": silver_count}
 
 
@@ -47,15 +47,12 @@ class TestPocJobUpdateSilver(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.spark = SparkSession.builder.appName("test_silver").getOrCreate()
-        cls.spark.sql("CREATE SCHEMA IF NOT EXISTS unittest")
-        cls.bronze_table = "unittest.bronze_sales_test_silver"
-        cls.silver_table = "unittest.silver_sales_test"
+        cls.bronze_table = "bronze_sales_silver_view"
+        cls.silver_table = "silver_sales_view"
 
     @classmethod
     def tearDownClass(cls):
-        cls.spark.sql(f"DROP TABLE IF EXISTS {cls.bronze_table}")
-        cls.spark.sql(f"DROP TABLE IF EXISTS {cls.silver_table}")
-        cls.spark.sql("DROP SCHEMA IF EXISTS unittest CASCADE")
+        pass
 
     def setUp(self):
         """各テスト前にBronze層テストデータを作成"""
@@ -74,7 +71,7 @@ class TestPocJobUpdateSilver(unittest.TestCase):
             )
             .withColumn("ingested_at", current_timestamp())
         )
-        bronze_df.write.mode("overwrite").saveAsTable(self.bronze_table)
+        bronze_df.createOrReplaceTempView(self.bronze_table)
 
     def test_deduplication_by_order_id(self):
         """重複するORD-001が1件に削減され、全体で5件になることを検証"""

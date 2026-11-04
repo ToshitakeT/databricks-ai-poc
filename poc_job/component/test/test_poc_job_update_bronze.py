@@ -16,13 +16,11 @@ class TestPocJobUpdateBronze(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.spark = SparkSession.builder.appName("test_bronze").getOrCreate()
-        cls.spark.sql("CREATE SCHEMA IF NOT EXISTS unittest")
-        cls.bronze_table = "unittest.bronze_sales_test"
+        cls.bronze_table = "bronze_sales_test_view"
 
     @classmethod
     def tearDownClass(cls):
-        cls.spark.sql(f"DROP TABLE IF EXISTS {cls.bronze_table}")
-        cls.spark.sql("DROP SCHEMA IF EXISTS unittest CASCADE")
+        pass
 
     def _create_sample_data(self):
         """ノートブックと同じサンプルデータを生成する"""
@@ -50,7 +48,7 @@ class TestPocJobUpdateBronze(unittest.TestCase):
             )
             .withColumn("ingested_at", current_timestamp())
         )
-        bronze_df.write.mode("overwrite").saveAsTable(self.bronze_table)
+        bronze_df.createOrReplaceTempView(self.bronze_table)
 
     def test_bronze_table_row_count(self):
         """Bronze層のレコード件数が11件であることを検証"""

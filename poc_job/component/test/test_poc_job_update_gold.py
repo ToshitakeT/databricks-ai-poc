@@ -6,6 +6,9 @@ poc_job_update_gold ノートブックの silver_to_gold 関数を検証する�
 """
 import unittest
 
+import datetime
+from decimal import Decimal
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, sum as _sum, count as _count, current_timestamp
 from pyspark.sql.types import DecimalType
@@ -30,7 +33,7 @@ def silver_to_gold(spark, silver_table: str, gold_table: str) -> dict:
 
     gold_count = gold_df.count()
 
-    gold_df.write.mode("overwrite").saveAsTable(gold_table)
+    gold_df.createOrReplaceTempView(gold_table)
     return {
         "categories": gold_count,
         "total_orders": gold_df.agg({"order_count": "sum"}).collect()[0][0],
@@ -43,32 +46,30 @@ class TestPocJobUpdateGold(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.spark = SparkSession.builder.appName("test_gold").getOrCreate()
-        cls.spark.sql("CREATE SCHEMA IF NOT EXISTS unittest")
-        cls.silver_table = "unittest.silver_sales_gold_test"
-        cls.gold_table = "unittest.gold_sales_test"
+        cls.silver_table = "silver_sales_gold_view"
+        cls.gold_table = "gold_sales_view"
 
     @classmethod
     def tearDownClass(cls):
-        cls.spark.sql(f"DROP TABLE IF EXISTS {cls.silver_table}")
-        cls.spark.sql(f"DROP TABLE IF EXISTS {cls.gold_table}")
-        cls.spark.sql("DROP SCHEMA IF EXISTS unittest CASCADE")
+        pass
 
     def _create_silver_data(self, rows=None):
         """テスト用Silverデータを作成"""
         if rows is None:
             rows = [
-                ("ORD-001", "CUST-101", "Electronics", 129.99, "2025-01-15"),
-                ("ORD-002", "CUST-102", "Books",       15.50,  "2025-01-16"),
-                ("ORD-003", "CUST-103", "Electronics", 899.00, "2025-01-17"),
-                ("ORD-004", "CUST-101", "Clothing",    59.99,  "2025-01-18"),
-                ("ORD-005", "CUST-104", "Books",       32.00,  "2025-01-19"),
-                ("ORD-006", "CUST-105", "Electronics", None,    "2025-01-20"), # null amount
+                ("ORD-001", "CUST-101", "Electronics", "129.99", datetime.date(2025, 1, 15)),
+                ("ORD-002", "CUST-102", "Books",       "15.50",  datetime.date(2025, 1, 16)),
+                ("ORD-003", "CUST-103", "Electronics", "899.00", datetime.date(2025, 1, 17)),
+                ("ORD-004", "CUST-101", "Clothing",    "59.99",  datetime.date(2025, 1, 18)),
+                ("ORD-005", "CUST-104", "Books",       "32.00",  datetime.date(2025, 1, 19)),
+                ("ORD-006", "CUST-105", "Electronics", None,     datetime.date(2025, 1, 20)), # null amount
             ]
         df = self.spark.createDataFrame(
             rows,
-            schema="order_id STRING, customer_id STRING, product_category STRING, sales_amount DECIMAL(10,2), order_date DATE",
+            schema="order_id STRING, customer_id STRING, product_category STRING, sales_amount STRING, order_date DATE",
         )
-        df.write.mode("overwrite").saveAsTable(self.silver_table)
+        df = df.withColumn("sales_amount", col("sales_amount").cast(DecimalType(10, 2)))
+        df.createOrReplaceTempView(self.silver_table)
 
     def test_gold_category_count(self):
         """Gold層のカテゴリ数が3 (Electronics, Books, Clothing) であることを検証"""
@@ -151,8 +152,8 @@ class TestPocJobUpdateGold(unittest.TestCase):
     def test_gold_all_null_amounts(self):
         """全レコードのsales_amountがNULLの場合、Gold層が0件になることを検証"""
         rows = [
-            ("ORD-001", "CUST-101", "Electronics", None, "2025-01-15"),
-            ("ORD-002", "CUST-102", "Books",       None, "2025-01-16"),
+            ("ORD-001", "CUST-101", "Electronics", None, datetime.date(2025, 1, 15)),
+            ("ORD-002", "CUST-102", "Books",       None, datetime.date(2025, 1, 16)),
         ]
         self._create_silver_data(rows=rows)
         silver_to_gold(self.spark, self.silver_table, self.gold_table)

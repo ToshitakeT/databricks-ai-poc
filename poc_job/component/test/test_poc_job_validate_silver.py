@@ -6,8 +6,11 @@ warn / drop / fail の3種類のアクションを検証する。
 """
 import unittest
 
+from decimal import Decimal
+
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col
+from pyspark.sql.types import DecimalType
 
 
 def data_quality_check(spark, table_name: str, expectations: list) -> dict:
@@ -53,7 +56,7 @@ def data_quality_check(spark, table_name: str, expectations: list) -> dict:
     final_count = df.count()
 
     if dropped_count > 0:
-        df.write.mode("overwrite").saveAsTable(table_name)
+        df.createOrReplaceTempView(table_name)
 
     return {
         "total_input": total_count,
@@ -69,29 +72,28 @@ class TestPocJobValidateSilver(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.spark = SparkSession.builder.appName("test_validate").getOrCreate()
-        cls.spark.sql("CREATE SCHEMA IF NOT EXISTS unittest")
-        cls.test_table = "unittest.silver_sales_validate_test"
+        cls.test_table = "silver_sales_validate_view"
 
     @classmethod
     def tearDownClass(cls):
-        cls.spark.sql(f"DROP TABLE IF EXISTS {cls.test_table}")
-        cls.spark.sql("DROP SCHEMA IF EXISTS unittest CASCADE")
+        pass
 
     def _create_test_data(self, rows=None):
         """テスト用Silverデータを作成"""
         if rows is None:
             rows = [
-                ("ORD-001", "CUST-101", "Electronics", 129.99, "2025-01-15"),
-                ("ORD-002", "CUST-102", "Books",       15.50,  "2025-01-16"),
-                ("ORD-003", "CUST-103", "Electronics", 899.00, "2025-01-17"),
-                ("ORD-004", "CUST-101", None,          59.99,  "2025-01-18"),  # null category
-                ("ORD-005", "CUST-104", "Books",       None,   "2025-01-19"),  # null amount
+                ("ORD-001", "CUST-101", "Electronics", "129.99", "2025-01-15"),
+                ("ORD-002", "CUST-102", "Books",       "15.50",  "2025-01-16"),
+                ("ORD-003", "CUST-103", "Electronics", "899.00", "2025-01-17"),
+                ("ORD-004", "CUST-101", None,          "59.99",  "2025-01-18"),  # null category
+                ("ORD-005", "CUST-104", "Books",       None,     "2025-01-19"),  # null amount
             ]
         df = self.spark.createDataFrame(
             rows,
-            schema="order_id STRING, customer_id STRING, product_category STRING, sales_amount DECIMAL(10,2), order_date STRING",
+            schema="order_id STRING, customer_id STRING, product_category STRING, sales_amount STRING, order_date STRING",
         )
-        df.write.mode("overwrite").saveAsTable(self.test_table)
+        df = df.withColumn("sales_amount", col("sales_amount").cast(DecimalType(10, 2)))
+        df.createOrReplaceTempView(self.test_table)
 
     def test_warn_action_keeps_records(self):
         """warnアクション: 違反レコードがカウントされ、レコードは保持される"""
