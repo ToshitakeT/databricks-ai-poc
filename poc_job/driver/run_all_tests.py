@@ -4,12 +4,10 @@ import os
 import sys
 import unittest
 
-# ノートブックの配置ディレクトリを基準にテストディレクトリを相対指定
+# DAB構造は固定のため、テストディレクトリのパスを直接指定
 # ノートブック: poc_job/driver/run_all_tests
-# テストディレクトリ: poc_job/component/test → driver から ../component/test
-_notebook_path = dbutils.notebook.getContext().notebookPath().get()
-_driver_dir = os.path.dirname(_notebook_path)
-TEST_DIR = os.path.normpath(os.path.join("/Workspace", _driver_dir, "..", "component", "test"))
+# テストディレクトリ: poc_job/component/test
+TEST_DIR = "/Workspace/poc_job/component/test"
 
 # COMMAND ----------
 
