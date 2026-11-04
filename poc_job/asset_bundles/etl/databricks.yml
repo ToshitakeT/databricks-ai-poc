@@ -1,0 +1,34 @@
+bundle:
+  name: poc_etl_bundle
+
+resources:
+  jobs:
+    POC_ETL:
+      name: POC_ETL
+      tasks:
+        - task_key: POC_ETL
+          notebook_task:
+            notebook_path: ../driver/POC Medallion Pipeline Driver
+            source: WORKSPACE
+        - task_key: refresh_dashboard
+          depends_on:
+            - task_key: POC_ETL
+          dashboard_task:
+            subscription:
+              attachment:
+                page_attachment: {}
+            warehouse_id: d644d279423181e8
+            dashboard_id: ${var.dashboard_id}
+      queue:
+        enabled: true
+      performance_target: PERFORMANCE_OPTIMIZED
+
+variables:
+  dashboard_id:
+    description: Dashboard ID deployed by the dashboard bundle
+    default: "01f1d78157711fe79e4a285d1fe8fee2"
+
+targets:
+  dev:
+    default: true
+    mode: development

@@ -1,0 +1,20 @@
+bundle:
+  name: poc_unittest_bundle
+
+resources:
+  jobs:
+    POC_UnitTest:
+      name: POC_UnitTest
+      tasks:
+        - task_key: run_all_tests
+          notebook_task:
+            notebook_path: ../driver/run_all_tests
+            source: WORKSPACE
+      queue:
+        enabled: true
+      performance_target: PERFORMANCE_OPTIMIZED
+
+targets:
+  dev:
+    default: true
+    mode: development

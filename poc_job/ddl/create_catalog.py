@@ -5,3 +5,8 @@
 # ///
 # MAGIC %sql
 # MAGIC CREATE CATALOG playground
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC CREATE CATALOG unittest

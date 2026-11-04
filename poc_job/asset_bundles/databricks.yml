@@ -1,0 +1,12 @@
+bundle:
+  name: poc_asset_bundle
+
+include:
+  - dashboard/*.yml
+  - etl/*.yml
+  - unittest/*.yml
+
+targets:
+  dev:
+    default: true
+    mode: development
