@@ -1,13 +1,19 @@
 # Databricks notebook source
+# /// script
+# [tool.databricks.environment]
+# environment_version = "6"
+# ///
 # DBTITLE 1,設定
 import os
 import sys
 import unittest
 
-# DAB構造は固定のため、テストディレクトリのパスを直接指定
-# ノートブック: poc_job/driver/run_all_tests
-# テストディレクトリ: poc_job/component/test
-TEST_DIR = "/Workspace/poc_job/component/test"
+# ノートブックのパスから相対パスでテストディレクトリを特定
+# ノートブック: .../poc_job/driver/run_all_tests
+# テストディレクトリ: .../poc_job/component/test (= ../component/test)
+_notebook_path = dbutils.notebook.getContext().notebookPath().get()
+_notebook_dir = os.path.dirname(_notebook_path)  # /Users/.../poc_job/driver
+TEST_DIR = os.path.normpath(os.path.join("/Workspace" + _notebook_dir, "..", "component", "test"))
 
 # COMMAND ----------
 
@@ -64,6 +70,3 @@ else:
 # テスト失敗時は例外を発生させてジョブを停止
 if not result.wasSuccessful():
     raise RuntimeError(f"unittest失敗: {len(result.failures)} failures, {len(result.errors)} errors")
-
-# COMMAND ----------
-
