@@ -1,0 +1,110 @@
+{
+  "datasets": [
+    {
+      "name": "0215e3dd",
+      "displayName": "Sales Summary by Product Category and Date",
+      "queryLines": [
+        "select \r\n",
+        "    product_category as `商品カテゴリ`,\r\n",
+        "    total_sales as `総売上`,\r\n",
+        "    order_count as `注文数`,\r\n",
+        "    calculated_at as `集計日時`\r\n",
+        "from playground.poc_gold.gold_sales_by_category"
+      ]
+    }
+  ],
+  "pages": [
+    {
+      "name": "993766f2",
+      "displayName": "Untitled page",
+      "layout": [
+        {
+          "widget": {
+            "name": "db1bcbe9",
+            "multilineTextboxSpec": {
+              "lines": [
+                "# カテゴリ別売上サマリー"
+              ]
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 0,
+            "width": 12,
+            "height": 2
+          }
+        },
+        {
+          "widget": {
+            "name": "2ce06fe5",
+            "queries": [
+              {
+                "name": "main_query",
+                "query": {
+                  "datasetName": "0215e3dd",
+                  "fields": [
+                    {
+                      "name": "商品カテゴリ",
+                      "expression": "`商品カテゴリ`"
+                    },
+                    {
+                      "name": "注文数",
+                      "expression": "`注文数`"
+                    },
+                    {
+                      "name": "総売上",
+                      "expression": "`総売上`"
+                    },
+                    {
+                      "name": "集計日時",
+                      "expression": "`集計日時`"
+                    }
+                  ],
+                  "disaggregated": true
+                }
+              }
+            ],
+            "spec": {
+              "version": 2,
+              "displayRowNumbers": true,
+              "widgetType": "table",
+              "encodings": {
+                "columns": [
+                  {
+                    "fieldName": "商品カテゴリ"
+                  },
+                  {
+                    "fieldName": "注文数"
+                  },
+                  {
+                    "fieldName": "総売上"
+                  },
+                  {
+                    "fieldName": "集計日時"
+                  }
+                ]
+              },
+              "data": {
+                "queryName": "main_query"
+              }
+            }
+          },
+          "position": {
+            "x": 0,
+            "y": 2,
+            "width": 12,
+            "height": 4
+          }
+        }
+      ],
+      "pageType": "PAGE_TYPE_CANVAS",
+      "layoutVersion": "GRID_V1"
+    }
+  ],
+  "uiSettings": {
+    "theme": {
+      "widgetHeaderAlignment": "ALIGNMENT_UNSPECIFIED"
+    },
+    "applyModeEnabled": false
+  }
+}
