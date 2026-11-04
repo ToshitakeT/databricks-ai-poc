@@ -36,6 +36,11 @@ for f in test_files:
 if TEST_DIR not in sys.path:
     sys.path.insert(0, TEST_DIR)
 
+# 前回実行時のテストモジュールキャッシュをクリア（ファイル変更を反映）
+for mod_name in list(sys.modules):
+    if mod_name.startswith("test_poc_job"):
+        del sys.modules[mod_name]
+
 # unittest の TestLoader でディスカバリ実行
 loader = unittest.TestLoader()
 suite = loader.discover(TEST_DIR, pattern="test_*.py")
