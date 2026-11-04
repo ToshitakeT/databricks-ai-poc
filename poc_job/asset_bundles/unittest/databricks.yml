@@ -1,6 +1,12 @@
 bundle:
   name: poc_unittest_bundle
 
+sync:
+  paths:
+    - .
+    - ../../driver
+    - ../../component
+
 resources:
   jobs:
     POC_UnitTest:
@@ -8,7 +14,7 @@ resources:
       tasks:
         - task_key: run_all_tests
           notebook_task:
-            notebook_path: ../driver/run_all_tests
+            notebook_path: ../../driver/run_all_tests.py
             source: WORKSPACE
       queue:
         enabled: true

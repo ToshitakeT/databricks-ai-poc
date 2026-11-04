@@ -1,0 +1,48 @@
+name: ETL Deploy
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'poc_job/driver/**'
+      - 'poc_job/component/**'
+      - 'poc_job/ddl/**'
+      - 'poc_job/asset_bundles/etl/**'
+      - 'poc_job/asset_bundles/unittest/**'
+      - '.github/workflows/etl-deploy.yml'
+
+  workflow_dispatch:
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Databricks CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/cli/main/install/install.sh | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Deploy UnitTest Bundle
+        working-directory: poc_job/asset_bundles/unittest
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle deploy --target dev --auto-approve
+
+      - name: Run UnitTests
+        working-directory: poc_job/asset_bundles/unittest
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle run POC_UnitTest --target dev
+
+      - name: Deploy ETL Bundle
+        working-directory: poc_job/asset_bundles/etl
+        env:
+          DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+          DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+        run: databricks bundle deploy --target dev --auto-approve

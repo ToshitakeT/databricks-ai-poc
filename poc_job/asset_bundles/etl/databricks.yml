@@ -1,6 +1,13 @@
 bundle:
   name: poc_etl_bundle
 
+sync:
+  paths:
+    - .
+    - ../../driver
+    - ../../component
+    - ../../ddl
+
 resources:
   jobs:
     POC_ETL:
@@ -8,7 +15,7 @@ resources:
       tasks:
         - task_key: POC_ETL
           notebook_task:
-            notebook_path: ../driver/POC Medallion Pipeline Driver
+            notebook_path: ../../driver/POC Medallion Pipeline Driver.py
             source: WORKSPACE
         - task_key: refresh_dashboard
           depends_on:

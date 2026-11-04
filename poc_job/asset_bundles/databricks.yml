@@ -1,10 +1,9 @@
 bundle:
   name: poc_asset_bundle
 
-include:
-  - dashboard/*.yml
-  - etl/*.yml
-  - unittest/*.yml
+# Sub-bundles are now deployed independently from their own directories.
+# Each sub-bundle (etl/, dashboard/, unittest/) has its own bundle root.
+# Use `databricks bundle deploy` from each sub-bundle directory.
 
 targets:
   dev:
