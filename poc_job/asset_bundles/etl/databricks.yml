@@ -38,6 +38,3 @@ variables:
 targets:
   dev:
     default: true
-    mode: development
-    presets:
-      name_prefix: ""
