@@ -1,0 +1,14 @@
+bundle:
+  name: poc_dashboard_bundle
+
+resources:
+  dashboards:
+    poc_etl_dashboard:
+      display_name: POC_ETL_Dashboard
+      file_path: ./src/POC_ETL_Dashboard.lvdash.json
+      warehouse_id: d644d279423181e8
+
+targets:
+  dev:
+    default: true
+    mode: development
