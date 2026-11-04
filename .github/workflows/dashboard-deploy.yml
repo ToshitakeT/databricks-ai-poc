@@ -18,9 +18,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install Databricks CLI
-        run: |
-          curl -fsSL https://raw.githubusercontent.com/databricks/cli/main/install/install.sh | sh
-          echo "$HOME/.local/bin" >> $GITHUB_PATH
+        uses: databricks/setup-cli@main
 
       - name: Deploy Dashboard Bundle
         working-directory: poc_job/asset_bundles/dashboard
